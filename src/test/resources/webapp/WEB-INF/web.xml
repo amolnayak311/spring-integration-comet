@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:j2ee="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee    http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    
+    <servlet>
+    	<servlet-name>MeteorServlet</servlet-name>
+    	<servlet-class>org.atmosphere.cpr.MeteorServlet</servlet-class>
+    	<init-param>
+    		<param-name>org.atmosphere.servlet</param-name>
+    		<param-value>org.springframework.web.servlet.DispatcherServlet</param-value>
+    	</init-param>
+    	<async-supported>false</async-supported>    	
+    </servlet>
+        
+    <servlet-mapping>
+    	<servlet-name>MeteorServlet</servlet-name>
+    	<url-pattern>/comet/*</url-pattern>
+    </servlet-mapping>    
+   
+</web-app>
