@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.integration.comet.core.transport.AbstractCometMessagingTransport;
 import org.springframework.integration.comet.core.transport.CometMessagingDefaultTransport;
 import org.springframework.integration.comet.core.transport.CometMessagingTransport;
 import org.springframework.util.StringUtils;
@@ -92,8 +93,8 @@ public class CometMessagingServices<T> implements InitializingBean {
 		if(!StringUtils.hasText(endpointUrl))
 			throw new BeanDefinitionStoreException("attributes \"endpointUrl\" is mandatory");
 		
-		if(transport instanceof InitializingBean) {
-			((InitializingBean)transport).afterPropertiesSet();
+		if(transport instanceof AbstractCometMessagingTransport) {
+			((AbstractCometMessagingTransport)transport).initializeTransport();
 		}
 		
 		if(transformer == null)

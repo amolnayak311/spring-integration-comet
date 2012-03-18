@@ -19,8 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.integration.comet.core.transport.CometMessagingTransport;
-import org.springframework.integration.comet.core.transport.CometMessagingWebsocketTransport;
+import org.springframework.integration.comet.core.transport.CometMessagingJettyWebSocketTransport;
 
 /**
  * The test case for the service using web socket transport
@@ -36,11 +35,11 @@ public class WebSocketClientTest {
 	@Before
 	public void init() throws Exception {
 		if(service == null) {
-			CometMessagingTransport transport = new CometMessagingWebsocketTransport();		
+			CometMessagingJettyWebSocketTransport transport = new CometMessagingJettyWebSocketTransport();
+			transport.setProtocol("echo");
 			service = new CometMessagingServices<String>();
 			service.setTransport(transport);
-			service.setTransformer(new StringToCometMessageTransformer());	
-			//Starting TCP Mon, hence port is 8888, else change this to 8080
+			service.setTransformer(new StringToCometMessageTransformer());
 			service.setEndpointUrl("ws://localhost:8080/");		
 			service.afterPropertiesSet();
 		}
@@ -48,33 +47,34 @@ public class WebSocketClientTest {
 	}
 	
 	@Test
-	public void subcribe() {
+	public void subcribe() throws Exception  {
 		logger.info("\n\nSubscribing");
-		final CometSubscription subscription = service.subscribe("topic", new CometMessageListener<String>() {
+		final CometSubscription subscription = service.subscribe("echo", new CometMessageListener<String>() {
 			
 			public void onMessage(String message) {
-				logger.info("Received message " + message);				
+				logger.info("Received message \"" + message + "\"");				
 			}
 		});
-		//close after 10 seconds
+		//close after 8 seconds
 		new Thread(new Runnable() {			
 			public void run() {
 				try {
-					Thread.sleep(Long.MAX_VALUE);
+					Thread.sleep(8000);
 				} catch (InterruptedException e) {					
 					e.printStackTrace();
 				}
 				subscription.unsubscribe();
 			}
-		}).start();
+		}).start();		
 	}
 	
 	@Test
 	public void sendToEndpoint() throws Exception{
 		logger.info("\n\nSending to endpoint");
-		for(int i = 0;i < 5;i++)
-			service.convertAndSend("Test Message", "topic");
-		logger.info("Sent to endpoint");
-		Thread.sleep(2000);
+		for(int i = 0; i < 5;i++) {
+			service.convertAndSend("Test Message", "echo");
+			logger.info("Sent to endpoint");
+			Thread.sleep(2000);
+		}
 	}
 }

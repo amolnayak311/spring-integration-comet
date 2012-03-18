@@ -38,7 +38,7 @@ import org.springframework.util.StringUtils;
  *
  */
 public abstract class AbstractCometMessagingTransport implements
-		CometMessagingTransport,InitializingBean {
+		CometMessagingTransport {
 
 	
 	protected static final String CONTENT_TYPE = "Content-Type";
@@ -104,7 +104,8 @@ public abstract class AbstractCometMessagingTransport implements
 		//Encode the message
 		String encodedString = null;		
 		try {
-			encodedString = URLEncoder.encode(serializedMessage, charset);			
+			String strToEncode = serializedMessage.substring(messageParamName.length());
+			encodedString = URLEncoder.encode(strToEncode, charset);			
 		} catch (UnsupportedEncodingException e) {
 			//ignore				
 			e.printStackTrace();
@@ -133,7 +134,7 @@ public abstract class AbstractCometMessagingTransport implements
 	/**
 	 * Implemented after properties set method from {@link InitializingBean}
 	 */
-	public final void afterPropertiesSet() throws Exception {
+	public final void initializeTransport() throws Exception {
 		if(defaultMessageSerializer == null)
 			throw new BeanDefinitionStoreException("A default serializer is mandatory to send messaged to " +
 					"comet endpoint, found a null serializer");
@@ -143,10 +144,20 @@ public abstract class AbstractCometMessagingTransport implements
 		
 		if(executor == null)
 			throw new BeanDefinitionStoreException("A non null executor service is required");
+		
+		if(defaultMessageSerializer instanceof CometMessageJSONSerializer)
+			((CometMessageJSONSerializer)defaultMessageSerializer).setCommonPrefix(messageParamName);
+		
+		init();
 	}
 
-
-
+	/**
+	 * Subclasses override this method to implement specific initialization functionality
+	 * 
+	 */
+	protected void init() throws Exception {
+		
+	}
 	
 	
 	public void setDefaultMessageSerializer(CometMessageSerializer defaultMessageSerializer) {

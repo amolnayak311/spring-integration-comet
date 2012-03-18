@@ -15,74 +15,26 @@
  */
 package org.springframework.integration.comet.core;
 
-import java.net.InetSocketAddress;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketServer;
-import org.java_websocket.handshake.ClientHandshake;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletHandler;
 
 /**
- * The echo server that will echo the content sent to it back to the client
+ * The main test class that starts the JETTY server in embedded mode and accepting eb socket connections
  * 
  * @author Amol Nayak
  *
  */
 public class WebSocketEchoServerTest {
-	
-	private static Log logger = LogFactory.getLog(WebSocketEchoServerTest.class);
-	
-	public static void main(String[] args) {
-		logger.info("Starting server to listen to port 8080");
-		CometServer server = new CometServer(8080);
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("Starting server to listen to port 8080");
+		Server server = new Server(8080);
+		ServletHandler handler = new ServletHandler();
+		handler.addServletWithMapping(WSServlet.class, "/echo");
+		server.setHandler(handler);
 		server.start();
-	}	
-}
-
-
-class CometServer extends WebSocketServer {
-	
-	private Log logger = LogFactory.getLog(CometServer.class);
-
-	public CometServer(int port) {
-		super(new InetSocketAddress(port));
-	}
-
-	
-	@Override
-	public void onClose(WebSocket sock, int arg1, String arg2, boolean arg3) {
-		logger.info("Subscriber Left");
-	}
-
-
-	@Override
-	public void onError(WebSocket sock, Exception e) {
-		logger.error("Caught Exception ", e);
-		
-	}
-
-
-	@Override
-	public void onMessage(WebSocket sock, String message) {
-		try {
-			broadcast(message);
-		} catch (InterruptedException e) {			
-			e.printStackTrace();
-		}
-		
-	}
-
-
-	@Override
-	public void onOpen(WebSocket arg0, ClientHandshake arg1) {
-		logger.info("Subscriber joined");		
-	}
-	
-	private void broadcast(String message) throws InterruptedException {
-		for(WebSocket socket: connections()) {			
-			socket.send(message);			
-		}
+		server.join();
 	}
 }
+
 
